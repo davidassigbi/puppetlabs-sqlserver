@@ -111,6 +111,17 @@ sqlserver::login{ 'WIN-D95P1A3V103\localAccount':
 }
 ```
 
+To pin a SQL login's SID (e.g. so AlwaysON replicas share one SID), pass a hex
+string literal via `sid`; it is applied at creation only:
+
+```puppet
+sqlserver::login{ 'app_login':
+  instance => 'MSSQLSERVER',
+  password => 'Pupp3t1@',
+  sid      => '0xA1B2C3D4E5F6A1B2C3D4E5F6A1B2C3D4',
+}
+```
+
 ### Create a new login and a user for a given database
 
 ```puppet

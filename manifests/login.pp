@@ -19,6 +19,13 @@
 #   Plain text password. Only applicable when Login_Type = 'SQL_LOGIN'.
 #   Can be passed through as a sensitive value.
 #
+# @param sid
+#   Optional hex string literal (e.g. '0xA1B2C3D4E5F6A1B2C3D4E5F6A1B2C3D4') to
+#   pin the login SID at creation. SQL_LOGIN only; ignored for WINDOWS_LOGIN.
+#   Only applied at creation — ALTER LOGIN cannot change a SID, so a mismatch
+#   on an existing login is surfaced by the onlyif guard (THROW) for the
+#   operator to drop+recreate manually; there is no auto-correct.
+#
 # @param svrroles
 #   A hash of preinstalled server roles that you want assigned to this login.
 #   sample usage would be  { 'diskadmin' => 1, 'dbcreator' => 1, 'sysadmin' => 0,  }
@@ -57,6 +64,7 @@ define sqlserver::login (
   Enum['SQL_LOGIN', 'WINDOWS_LOGIN'] $login_type = 'SQL_LOGIN',
   Enum['present', 'absent'] $ensure = 'present',
   Optional[Variant[Sensitive[String], String]] $password = undef,
+  Optional[String] $sid = undef,
   Hash $svrroles = {},
   String $default_database = 'master',
   String $default_language = 'us_english',
@@ -81,6 +89,7 @@ define sqlserver::login (
       'disabled'          => $disabled,
       'login'             => $login,
       'password'          => $password,
+      'sid'               => $sid,
       'check_expiration'  => $check_expiration,
       'check_policy'      => $check_policy,
       'default_language'  => $default_language,
@@ -104,6 +113,7 @@ define sqlserver::login (
     'default_language'  => $default_language,
     'ensure'            => $ensure,
     'svrroles'          => $svrroles,
+    'sid'               => $sid,
   }
 
   sqlserver_tsql { "login-${instance}-${login}":

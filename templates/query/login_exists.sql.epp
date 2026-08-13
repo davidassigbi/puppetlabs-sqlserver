@@ -35,6 +35,13 @@ SET @principal_type = (SELECT p.[type] FROM sys.server_principals p
 	)
 IF (@principal_type IS NULL) THROW 51000, 'ERROR: The login is not in the correct state', 10
 
+<% if $sid and $login_type == 'SQL_LOGIN' { %>
+IF EXISTS(SELECT 1 FROM sys.server_principals p
+          JOIN sys.sql_logins s ON s.name = p.name
+          WHERE p.name = @login AND s.sid != <%= $sid %>)
+    THROW 51000, 'ERROR: The login SID does not match the desired value', 10
+<% } %>
+
 <% if $login_type == 'WINDOWS_LOGIN' { %>
 /* Look for the CONNECT SQL server permission on the WINDOWS_GROUP */
 IF (@principal_type = 'G')

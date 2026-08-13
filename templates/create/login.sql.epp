@@ -9,7 +9,8 @@ BEGIN
 	CREATE LOGIN [<%= $login %>]
 	 <% if $login_type !~ /WINDOWS_LOGIN/ { -%>
 	  WITH
-		PASSWORD = '<%= $password %>',
+		PASSWORD = '<%= $password %>'<% if $sid { %>,
+		SID = <%= $sid %><% } %>,
 		CHECK_EXPIRATION = <% if $check_expiration { %>ON<% } else { %>OFF<% } %>,
 		CHECK_POLICY	 = <% if $check_policy { %>ON<% } else { %>OFF<% } %>,
 	<% } else { -%>
