@@ -25,6 +25,15 @@
 # @param instance
 #   The name of the instance where the user and database exists. Defaults to 'MSSQLSERVER'
 #
+# @param securable
+#   Optional object securable to scope the permission to, e.g.
+#   'msdb.dbo.agent_datetime' or '[dbo].[sysjobs]'. When undef (default) the
+#   permission is database-wide (`GRANT <perm> TO [<user>]`). When set, the
+#   grant becomes object-scoped (`GRANT <perm> ON <securable> TO [<user>]`).
+#   The value is interpolated verbatim into the T-SQL — the caller is
+#   responsible for supplying valid securable syntax. Object-level securables
+#   only; schema securables (`SCHEMA::...`) are not yet supported.
+#
 ##
 define sqlserver::user::permissions (
   String[1,128] $user,
@@ -33,8 +42,13 @@ define sqlserver::user::permissions (
   Pattern[/(?i)^(GRANT|REVOKE|DENY)$/] $state = 'GRANT',
   Boolean $with_grant_option = false,
   String[1,16] $instance = 'MSSQLSERVER',
+  Optional[String] $securable = undef,
 ) {
   sqlserver_validate_instance_name($instance)
+
+  if $securable =~ /SCHEMA::/ {
+    fail('sqlserver::user::permissions: schema securables (SCHEMA::...) are not yet supported, use an object securable')
+  }
 
   $_state = upcase($state)
   if $with_grant_option and $_state != 'GRANT' {
@@ -50,6 +64,7 @@ define sqlserver::user::permissions (
     'user'              => $user,
     '_state'            => $_state,
     'with_grant_option' => $with_grant_option,
+    'securable'         => $securable,
   }
 
   $user_permission_parameters = {
@@ -58,6 +73,7 @@ define sqlserver::user::permissions (
     'with_grant_option'                 => $with_grant_option,
     'user'                              => $user,
     '_state'                            => $_state,
+    'securable'                         => $securable,
     'user_permission_exists_parameters' => $user_permission_exists_parameters,
   }
 

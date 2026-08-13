@@ -6,9 +6,9 @@ SET @permission = '<%= $permission %>'
 BEGIN
     <% if $with_grant_option == false { %>
     IF 'GRANT_WITH_GRANT_OPTION' = <%= epp('sqlserver/snippets/login/get_perm_state.sql.epp', { 'login' => $login }) %>
-        REVOKE GRANT OPTION FOR <%= $permission %> TO [<%= $login %>] CASCADE;
+        REVOKE GRANT OPTION FOR <%= $permission %><% if $securable { %> ON <%= $securable %><% } %> TO [<%= $login %>] CASCADE;
     <% } %>
-    <%= $_state %> <%= $permission %> TO [<%= $login %>]<% if $with_grant_option == true { %> WITH GRANT OPTION<% } %>;
+    <%= $_state %> <%= $permission %><% if $securable { %> ON <%= $securable %><% } %> TO [<%= $login %>]<% if $with_grant_option == true { %> WITH GRANT OPTION<% } %>;
 END
 BEGIN
     <%= epp('sqlserver/snippets/login/permission/exists.sql.epp', { 'login' => $login, '_state' => $_state, 'with_grant_option' => $with_grant_option}) %>

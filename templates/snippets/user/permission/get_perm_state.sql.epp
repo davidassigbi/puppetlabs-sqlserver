@@ -1,5 +1,14 @@
 ISNULL(
     (SELECT perm.state_desc FROM sys.database_principals princ
         JOIN sys.database_permissions perm ON perm.grantee_principal_id = princ.principal_id
-        WHERE princ.type in ('U','S','G') AND name = '<%= $user %>' AND permission_name = @permission),
+<% if $securable { -%>
+        JOIN sys.objects o ON o.object_id = perm.major_id
+<% } -%>
+        WHERE princ.type in ('U','S','G') AND princ.name = '<%= $user %>' AND permission_name = @permission
+<% if $securable { -%>
+        AND perm.class = 1
+        AND o.name = PARSENAME('<%= $securable %>', 1)
+        AND SCHEMA_NAME(o.schema_id) = PARSENAME('<%= $securable %>', 2)
+<% } -%>
+    ),
         'REVOKE')

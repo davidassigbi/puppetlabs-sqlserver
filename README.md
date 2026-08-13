@@ -155,6 +155,19 @@ sqlserver::user::permissions{ 'Deny the Update as we should only insert':
 }
 ```
 
+To scope a permission to a specific object rather than the whole database,
+pass the securable verbatim (object-level only):
+
+```puppet
+sqlserver::user::permissions{ 'EXEC on agent_datetime':
+  user        => 'app_user',
+  database    => 'msdb',
+  permissions => ['EXECUTE'],
+  securable   => 'msdb.dbo.agent_datetime',
+  require     => Sqlserver::User['msdb-app_user'],
+}
+```
+
 ### Run custom TSQL statements
 
 #### Use `sqlserver_tsql` to trigger other classes or defined types

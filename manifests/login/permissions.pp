@@ -20,7 +20,18 @@
 #   The name of the instance where the user and database exists. Defaults to 'MSSQLSERVER'
 # 
 # @param with_grant_option
-#   Bolean value that allows user to grant options. 
+#   Bolean value that allows user to grant options.
+#
+# @param securable
+#   Optional server-scoped securable to scope the permission to, e.g.
+#   'LOGIN::[sa]' or 'ENDPOINT::[Mirroring]'. When undef (default) the
+#   permission is server-wide (`GRANT <perm> TO [<login>]`). When set, the
+#   grant becomes object-scoped (`GRANT <perm> ON <securable> TO [<login>]`).
+#   The value is interpolated verbatim into the T-SQL — the caller is
+#   responsible for supplying valid securable syntax. Note: in this first cut
+#   the onlyif guard is not filtered by securable for the server path, so a
+#   differing grant state on any securable may trigger a spurious corrective
+#   run — safe, just not optimally idempotent.
 #
 ##
 define sqlserver::login::permissions (
@@ -29,6 +40,7 @@ define sqlserver::login::permissions (
   Pattern[/(?i)^(GRANT|REVOKE|DENY)$/] $state = 'GRANT',
   Boolean $with_grant_option                  = false,
   String[1,16] $instance                      = 'MSSQLSERVER',
+  Optional[String] $securable                 = undef,
 ) {
   sqlserver_validate_instance_name($instance)
 
@@ -44,6 +56,7 @@ define sqlserver::login::permissions (
     'with_grant_option' => $with_grant_option,
     'login'             => $login,
     '_state'            => $_state,
+    'securable'         => $securable,
   }
 
   $login_permission_exists_parameters = {
