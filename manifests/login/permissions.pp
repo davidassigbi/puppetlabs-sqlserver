@@ -70,7 +70,12 @@ define sqlserver::login::permissions (
     'login_permission_exists_parameters'  => $login_permission_exists_parameters,
   }
 
-  sqlserver_tsql { "login-permission-${instance}-${login}-${_state}${_grant_option}":
+  $_securable_tag = $securable ? {
+    undef   => '',
+    default => "-${securable}",
+  }
+
+  sqlserver_tsql { "login-permission-${instance}-${login}-${_state}${_grant_option}${_securable_tag}":
     instance => $instance,
     command  => epp('sqlserver/create/login/permission.sql.epp', $create_login_permission_parameters),
     onlyif   => epp('sqlserver/query/login/permission_exists.sql.epp', $query_login_permission_exists_parameters),

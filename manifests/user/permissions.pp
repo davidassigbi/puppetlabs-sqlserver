@@ -83,8 +83,13 @@ define sqlserver::user::permissions (
     'user_permission_exists_parameters' => $user_permission_exists_parameters,
   }
 
+  $_securable_tag = $securable ? {
+    undef   => '',
+    default => "-${securable}",
+  }
+
   sqlserver_tsql {
-    "user-permissions-${instance}-${database}-${user}-${_state}${_grant_option}":
+    "user-permissions-${instance}-${database}-${user}-${_state}${_grant_option}${_securable_tag}":
       instance => $instance,
       command  => epp('sqlserver/create/user/permission.sql.epp', $user_permission_parameters),
       onlyif   => epp('sqlserver/query/user/permission_exists.sql.epp', $query_user_permission_exists_parameters),
