@@ -46,7 +46,7 @@ define sqlserver::user::permissions (
 ) {
   sqlserver_validate_instance_name($instance)
 
-  if $securable =~ /SCHEMA::/ {
+  if $securable and $securable =~ /SCHEMA::/ {
     fail('sqlserver::user::permissions: schema securables (SCHEMA::...) are not yet supported, use an object securable')
   }
 
